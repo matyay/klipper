@@ -29,6 +29,8 @@ class PrinterSensorGeneric:
             self.measured_max = max(self.measured_max, temp)
     def get_temp(self, eventtime):
         return self.last_temp, 0.
+    def get_power(self, eventtime):
+        return 0.0
     def stats(self, eventtime):
         return False, '%s: temp=%.1f' % (self.name, self.last_temp)
     def get_status(self, eventtime):
