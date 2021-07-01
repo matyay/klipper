@@ -39,6 +39,7 @@ class Heater:
         self.lock = threading.Lock()
         self.last_temp = self.smoothed_temp = self.target_temp = 0.
         self.last_temp_time = 0.
+        self.power = 0.0
         # pwm caching
         self.next_pwm_time = 0.
         self.last_pwm_value = 0.
@@ -72,6 +73,7 @@ class Heater:
         self.next_pwm_time = pwm_time + 0.75 * MAX_HEAT_TIME
         self.last_pwm_value = value
         self.mcu_pwm.set_pwm(pwm_time, value)
+        self.power = value / self.max_power
         #logging.debug("%s: pwm=%.3f@%.3f (from %.3f@%.3f [%.3f])",
         #              self.name, value, pwm_time,
         #              self.last_temp, self.last_temp_time, self.target_temp)
@@ -106,6 +108,8 @@ class Heater:
             if self.last_temp_time < print_time:
                 return 0., self.target_temp
             return self.smoothed_temp, self.target_temp
+    def get_power(self, eventtime):
+        return self.power
     def check_busy(self, eventtime):
         with self.lock:
             return self.control.check_busy(
@@ -298,12 +302,20 @@ class PrinterHeaters:
     def _handle_ready(self):
         self.has_started = True
     def _get_temp(self, eventtime):
-        # Tn:XXX /YYY B:XXX /YYY
+        # Tn:XXX /YYY @:ZZZ B:XXX /YYY B@:ZZZ
         out = []
         if self.has_started:
             for gcode_id, sensor in sorted(self.gcode_id_to_sensor.items()):
                 cur, target = sensor.get_temp(eventtime)
-                out.append("%s:%.1f /%.1f" % (gcode_id, cur, target))
+                power = sensor.get_power(eventtime) * 255.0
+                power_pfx = "B" if gcode_id == "B" else ""
+                out.append("%s:%.1f /%.1f %s@:%.1f" % (
+                    gcode_id,
+                    cur,
+                    target,
+                    power_pfx,
+                    power)
+                )
         if not out:
             return "T:0"
         return " ".join(out)
