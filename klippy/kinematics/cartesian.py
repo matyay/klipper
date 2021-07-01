@@ -159,8 +159,17 @@ class CartKinematics:
         pos = toolhead.get_position()
         pos[mc_axis] = mc_rail.get_commanded_position()
         toolhead.set_position(pos)
+
         if self.limits[mc_axis][0] <= self.limits[mc_axis][1]:
             self.limits[mc_axis] = mc_rail.get_range()
+
+        # Update axes limits
+        rails = list(self.rails)
+        rails[mc_axis] = mc_rail
+
+        ranges = [r.get_range() for r in rails]
+        self.axes_min = toolhead.Coord(*[r[0] for r in ranges], e=0.)
+        self.axes_max = toolhead.Coord(*[r[1] for r in ranges], e=0.)
 
     cmd_SET_CARRIAGE_help = "Set active carriage"
     def cmd_SET_CARRIAGE(self, gcmd):
