@@ -49,6 +49,7 @@ communication with the Klipper developers.
 - [TMC Drivers](TMC_Drivers.md): Using Trinamic stepper motor drivers
   with Klipper.
 - [Multi-MCU Homing](Multi_MCU_Homing.md): Homing and probing using multiple micro-controllers.
+- [Mixing extruder](Mixing_Extruder.md): Information about setting-up and using filament mixing extruders.
 - [Slicers](Slicers.md): Configure "slicer" software for Klipper.
 - [Skew correction](skew_correction.md): Adjustments for axes not
   perfectly square.
